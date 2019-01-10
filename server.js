@@ -8,6 +8,10 @@ var cors        = require('cors');
 var apiRoutes         = require('./routes/api.js');
 var fccTestingRoutes  = require('./routes/fcctesting.js');
 var runner            = require('./test-runner');
+var MongoClient = require('mongodb').MongoClient;
+var ObjectId = require('mongodb').ObjectID;
+
+const CONNECTION_STRING = process.env.DB; //MongoClient.connect(CONNECTION_STRING, function(err, db) {});
 
 var app = express();
 
@@ -19,6 +23,12 @@ app.use(cors({origin: '*'})); //For FCC testing purposes only
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+MongoClient.connect(CONNECTION_STRING, function(err, db) {
+  if(err) {
+    console.log('database error: ' + err);
+  }else {
+    console.log('successful database connection');
 
 //Sample front-end
 app.route('/:project/')
@@ -36,7 +46,7 @@ app.route('/')
 fccTestingRoutes(app);
 
 //Routing for API 
-apiRoutes(app);  
+apiRoutes(app, db);  
     
 //404 Not Found Middleware
 app.use(function(req, res, next) {
@@ -60,6 +70,8 @@ app.listen(process.env.PORT || 3000, function () {
       }
     }, 3500);
   }
+});
+}
 });
 
 module.exports = app; //for testing
